@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 import urllib.request
+from huggingface_hub import hf_hub_download
 
 from model import Transformer
 
@@ -52,12 +53,14 @@ if device.type == "cuda":
 
 @st.cache_resource
 def load_model():
-    if not os.path.exists(MODEL_PATH):
-        with st.spinner("Downloading model weights from Hugging Face..."):
-            urllib.request.urlretrieve(MODEL_URL, MODEL_PATH)
+    # Download weights directly from Hugging Face Hub
+    weights_path = hf_hub_download(
+        repo_id="Yashmathur/Transformer-from-scratch", 
+        filename="transformer.pth"
+    )
 
     model = Transformer(d_model=D_MODEL, d_k=D_K, h=NUM_HEADS)
-    checkpoint = torch.load(MODEL_PATH, map_location=device)
+    checkpoint = torch.load(weights_path, map_location=device)
     model.load_state_dict(checkpoint)
     model.to(device)
     model.eval()

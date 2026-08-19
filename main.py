@@ -3,6 +3,8 @@ import torch
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
+import urllib.request
 
 from model import Transformer
 
@@ -12,6 +14,7 @@ from model import Transformer
 # ============================================================
 
 MODEL_PATH = "transformer.pth"
+MODEL_URL = "https://huggingface.co/Yashmathur/Transformer-from-scratch"
 
 D_MODEL = 512
 D_K = 64
@@ -49,6 +52,10 @@ if device.type == "cuda":
 
 @st.cache_resource
 def load_model():
+    if not os.path.exists(MODEL_PATH):
+        with st.spinner("Downloading model weights from Hugging Face..."):
+            urllib.request.urlretrieve(MODEL_URL, MODEL_PATH)
+
     model = Transformer(d_model=D_MODEL, d_k=D_K, h=NUM_HEADS)
     checkpoint = torch.load(MODEL_PATH, map_location=device)
     model.load_state_dict(checkpoint)
@@ -91,7 +98,7 @@ def get_top_predictions(token_ids):
 
 
 # ============================================================
-# SIDEBAR (NUMBER INPUTS - NO SLIDERS)
+# SIDEBAR (NUMBER INPUTS)
 # ============================================================
 
 st.sidebar.header("Generation Options")
@@ -179,9 +186,9 @@ if "attention_scores" in st.session_state:
     )
 
     # Left Plot: Horizontal Bar Graph for Predictions
-    bars = ax_bar.barh(pred_tokens, pred_probs, color="#4C72B0")
-    ax_bar.set_xlabel("Probability (%)")
-    ax_bar.set_title("Top-5 Next Token Predictions")
+    bars = ax_bar.barh(pred_tokens, pred_probs, color="green")
+    ax_bar.set_xlabel("Probability (%)", weight='bold', fontsize=14)
+    ax_bar.set_title("Top-5 Next Token Predictions", fontsize=18)
     ax_bar.set_xlim(0, 105)
 
     for bar in bars:
@@ -207,9 +214,9 @@ if "attention_scores" in st.session_state:
         ax=ax_heat,
         cbar_kws={'label': 'Attention Weight'}
     )
-    ax_heat.set_xlabel("Token Being Attended To")
-    ax_heat.set_ylabel("Current Token")
-    ax_heat.set_title(f"Attention Matrix (Layer {layer_number}, Head {head_number})")
+    ax_heat.set_xlabel("Token Being Attended To", weight='bold', fontsize=14)
+    ax_heat.set_ylabel("Current Token", weight='bold', fontsize=14)
+    ax_heat.set_title(f"Attention Matrix (Layer {layer_number}, Head {head_number})", fontsize=18)
     ax_heat.tick_params(axis="x", rotation=45)
     ax_heat.tick_params(axis="y", rotation=0)
 

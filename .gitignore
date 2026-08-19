@@ -1,0 +1,5 @@
+checking.ipynb
+__pycache__
+data/
+*.pth
+*.arrow
